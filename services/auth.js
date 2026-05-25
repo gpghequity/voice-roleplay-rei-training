@@ -1,30 +1,14 @@
-let cachedToken = null;
-let tokenExpiry = 0;
+const { google } = require('googleapis');
 
-async function getAccessToken() {
-  if (cachedToken && Date.now() < tokenExpiry - 60000) return cachedToken;
-
-  const missing = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN']
-    .filter(k => !process.env[k]);
-  if (missing.length) throw new Error(`Missing Google OAuth env vars: ${missing.join(', ')}`);
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-      grant_type: 'refresh_token'
-    })
-  });
-
-  const data = await res.json();
-  if (!data.access_token) throw new Error('Token refresh failed: ' + JSON.stringify(data));
-
-  cachedToken = data.access_token;
-  tokenExpiry = Date.now() + (data.expires_in || 3600) * 1000;
-  return cachedToken;
+function makeAuth(scopes, subject) {
+  const creds = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  return new google.auth.JWT(
+    creds.client_email,
+    null,
+    creds.private_key,
+    scopes,
+    subject || process.env.IMPERSONATE_USER || null
+  );
 }
 
-module.exports = { getAccessToken };
+module.exports = { makeAuth };

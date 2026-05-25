@@ -1,42 +1,42 @@
-const { getAccessToken } = require('./auth');
+const { google } = require('googleapis');
+const { makeAuth } = require('./auth');
+
+const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+
+function sheetsClient() {
+  return google.sheets({ version: 'v4', auth: makeAuth([SHEETS_SCOPE]) });
+}
 
 async function appendRow(values) {
-  const token = await getAccessToken();
+  const sheets = sheetsClient();
   const id = process.env.SHEETS_ID;
-  const range = encodeURIComponent('Sheet1!A:U');
 
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values: [values] })
-    }
-  );
+  const res = await sheets.spreadsheets.values.append({
+    spreadsheetId: id,
+    range: 'Sheet1!A:U',
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: [values] }
+  });
 
-  const result = await res.json();
-  if (result.error) throw new Error('Sheets append failed: ' + JSON.stringify(result.error));
-  return result;
+  if (res.data.updates) return res.data.updates;
+  throw new Error('Sheets append returned no updates');
 }
 
 async function getYesterdayRows() {
-  const token = await getAccessToken();
+  const sheets = sheetsClient();
   const id = process.env.SHEETS_ID;
-  const range = encodeURIComponent('Sheet1!A:U');
 
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${range}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-
-  const data = await res.json();
-  if (data.error) throw new Error('Sheets read failed: ' + JSON.stringify(data.error));
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: id,
+    range: 'Sheet1!A:U'
+  });
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yDate = yesterday.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
-  const rows = data.values || [];
+  const rows = res.data.values || [];
   return rows.slice(1).filter(row => row[2] === yDate);
 }
 

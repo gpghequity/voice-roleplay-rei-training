@@ -1,20 +1,31 @@
-const { getAccessToken } = require('./auth');
+const { google } = require('googleapis');
+const { makeAuth } = require('./auth');
+
+const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+
+function gmailClient() {
+  return google.gmail({
+    version: 'v1',
+    auth: makeAuth([GMAIL_SCOPE], process.env.IMPERSONATE_USER)
+  });
+}
+
+function base64url(str) {
+  return Buffer.from(str).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 async function sendEmail(toAddresses, subject, body) {
-  const token = await getAccessToken();
+  const gmail = gmailClient();
   const toLine = Array.isArray(toAddresses) ? toAddresses.join(', ') : toAddresses;
   const raw = [`To: ${toLine}`, `Subject: ${subject}`, 'Content-Type: text/plain; charset=UTF-8', '', body].join('\r\n');
-  const encoded = Buffer.from(raw).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ raw: encoded })
+  const res = await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: { raw: base64url(raw) }
   });
 
-  const result = await res.json();
-  if (result.error) throw new Error('Gmail send failed: ' + JSON.stringify(result.error));
-  return result;
+  if (!res.data.id) throw new Error('Gmail send returned no message id');
+  return res.data;
 }
 
 async function sendAlert({ callerName, callerEmail, personaLabel, callType, datetime, flagReasons, overall, filename }) {
@@ -22,7 +33,7 @@ async function sendAlert({ callerName, callerEmail, personaLabel, callType, date
   if (process.env.ALERT_PHONE_EMAIL) alertTo.push(process.env.ALERT_PHONE_EMAIL);
   if (!alertTo.length) { console.warn('ALERT_TO not set — skipping alert email'); return; }
 
-  const subject = `⚠️ REIPractice ALERT — ${callerName} | ${personaLabel} | ${flagReasons.join(', ')}`;
+  const subject = `REIPractice ALERT — ${callerName} | ${personaLabel} | ${flagReasons.join(', ')}`;
   const body = [
     'Critical failure flagged in training session.',
     '',
