@@ -254,6 +254,23 @@ app.post('/send-digest', async (req, res) => {
   }
 });
 
+// ── digest cron ───────────────────────────────────────────────────────────────
+
+if (process.env.ENABLE_DIGEST_CRON === 'true') {
+  const cron = require('node-cron');
+  // 17:00 UTC = noon Eastern (accounts for EST/EDT)
+  cron.schedule('0 17 * * *', async () => {
+    console.log('Digest cron firing');
+    try {
+      const rows = await getYesterdayRows();
+      await sendDigest(rows);
+    } catch (err) {
+      console.error('Digest cron error:', err.message);
+    }
+  });
+  console.log('Digest cron scheduled (17:00 UTC daily)');
+}
+
 // ── start ─────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3000;
