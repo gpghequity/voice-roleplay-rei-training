@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REIPractice Training</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a1628;
+    --surface: #0f1f3d;
+    --surface2: #1e3a5f;
+    --gold: #c9a84c;
+    --gold-light: #e0be72;
+    --text: #e8e8e8;
+    --text-dim: #8a9bb5;
+    --red: #e05555;
+    --green: #4caf82;
+    --yellow: #e0b655;
+    --radius: 10px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .screen { display: none; width: 100%; max-width: 860px; padding: 32px 20px; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  h1 { font-family: Georgia, serif; color: var(--gold); font-size: 2.2rem; letter-spacing: 0.04em; }
+  h2 { font-family: Georgia, serif; color: var(--gold); font-size: 1.5rem; }
+  h3 { font-size: 1rem; font-weight: 600; }
+  .tagline { color: var(--text-dim); font-size: 0.9rem; margin-top: 6px; }
+
+  .btn {
+    background: var(--gold);
+    color: #0a1628;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--gold-light); }
+  .btn:disabled { background: #3a4a60; color: #5a6a80; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+  }
+  .btn-outline:hover { background: rgba(201,168,76,0.12); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid #2a3a55;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+  input[type="text"], input[type="password"], input[type="email"] {
+    background: var(--surface);
+    border: 1.5px solid #2a3a55;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 1rem;
+    padding: 14px 16px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--gold); }
+
+  /* SCREEN 1 — PASSWORD */
+  #screen-password {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 0;
+  }
+  .pw-card {
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: 14px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .pw-card h1 { font-size: 2.2rem; }
+  .pw-training-badge {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .pw-card .field { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .pw-error { color: var(--red); font-size: 0.88rem; min-height: 18px; text-align: center; }
+
+  /* SCREEN 2 — SETUP */
+  #screen-setup { gap: 28px; }
+  .setup-header { display: flex; flex-direction: column; gap: 6px; }
+  .identity-fields { display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
+  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  .field-group label { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .tracking-note {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 10px 14px;
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px;
+    max-width: 420px;
+  }
+
+  .calltype-section { display: flex; flex-direction: column; gap: 10px; }
+  .calltype-label { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .calltype-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .calltype-pill {
+    background: var(--surface);
+    border: 2px solid #1e3050;
+    border-radius: 8px;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 130px;
+  }
+  .calltype-pill:hover { border-color: var(--gold); background: #131e35; }
+  .calltype-pill.selected { border-color: var(--gold); background: #162240; }
+  .calltype-pill .ct-name { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+  .calltype-pill .ct-desc { font-size: 0.75rem; color: var(--text-dim); }
+
+  .persona-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .persona-card {
+    background: var(--surface);
+    border: 2px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .persona-card:hover { border-color: var(--gold); background: #131e35; }
+  .persona-card.selected { border-color: var(--gold); background: #162240; }
+  .persona-card .pname { font-family: Georgia, serif; font-size: 1.15rem; color: var(--text); }
+  .persona-card .plabel { font-size: 0.85rem; color: var(--text-dim); }
+  .difficulty-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    width: fit-content;
+  }
+  .diff-medium { background: rgba(76,175,130,0.18); color: var(--green); border: 1px solid var(--green); }
+  .diff-medium-hard { background: rgba(224,182,85,0.18); color: var(--yellow); border: 1px solid var(--yellow); }
+  .diff-hard { background: rgba(224,85,85,0.18); color: var(--red); border: 1px solid var(--red); }
+  .diff-hardest { background: rgba(180,50,50,0.25); color: #ff7070; border: 1px solid #ff7070; }
+  .setup-footer { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* SCREEN 3 — CALL */
+  #screen-call { gap: 20px; }
+  .call-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1e3050;
+  }
+  .call-topbar-left { display: flex; flex-direction: column; gap: 4px; }
+  .call-topbar-right { display: flex; gap: 10px; align-items: center; }
+  .persona-title { font-family: Georgia, serif; font-size: 1.3rem; color: var(--gold); }
+  .training-mode-badge {
+    background: rgba(201,168,76,0.18);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.5);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .state-bar {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+  .state-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .state-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .state-val { font-size: 1.1rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  .call-framing {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    min-height: 18px;
+    transition: opacity 0.3s;
+  }
+  .call-framing.hidden { opacity: 0; }
+
+  .persona-speech {
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 24px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: var(--text);
+    min-height: 80px;
+    text-align: center;
+  }
+
+  .speak-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+  }
+  .speak-btn {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .speak-btn:hover { background: #28507a; }
+  .speak-btn.listening {
+    background: rgba(201,168,76,0.2);
+    border-color: var(--gold-light);
+    animation: pulse 1.2s infinite;
+  }
+  .speak-btn.disabled-btn {
+    border-color: #3a4a60;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+    50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(201,168,76,0); }
+  }
+  .mic-icon { width: 40px; height: 40px; fill: var(--gold); }
+  .speak-status { font-size: 0.9rem; color: var(--text-dim); min-height: 22px; }
+
+  .transcript-section { display: flex; flex-direction: column; gap: 8px; }
+  .transcript-toggle {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.83rem;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .transcript-toggle:hover { color: var(--text); }
+  .transcript-panel {
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 16px;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .transcript-panel.hidden { display: none; }
+  .tx-turn { display: flex; flex-direction: column; gap: 2px; }
+  .tx-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+  .tx-label.user-label { color: var(--gold); }
+  .tx-label.ai-label { color: #5a9fd4; }
+  .tx-text { font-size: 0.88rem; line-height: 1.5; color: var(--text-dim); }
+
+  /* SCREEN 4 — SCORE */
+  #screen-score { gap: 24px; }
+  .score-header { display: flex; flex-direction: column; gap: 6px; }
+  .score-overall { font-size: 1.6rem; font-family: Georgia, serif; color: var(--gold); }
+  .score-items { display: flex; flex-direction: column; gap: 12px; }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .score-item-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .score-item-name { font-weight: 600; font-size: 0.95rem; }
+  .result-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .result-pass { background: rgba(76,175,130,0.18); color: var(--green); border: 1px solid var(--green); }
+  .result-partial { background: rgba(224,182,85,0.18); color: var(--yellow); border: 1px solid var(--yellow); }
+  .result-fail { background: rgba(224,85,85,0.18); color: var(--red); border: 1px solid var(--red); }
+  .result-na { background: rgba(138,155,181,0.15); color: var(--text-dim); border: 1px solid #3a4a60; }
+  .score-item-feedback { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+  .score-summary {
+    background: var(--surface);
+    border: 1px solid #1e3050;
+    border-radius: var(--radius);
+    padding: 20px;
+    line-height: 1.65;
+    font-size: 0.95rem;
+  }
+  .score-summary h3 { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+
+  .virtual-steve-card {
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(201,168,76,0.04);
+  }
+  .vs-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .vs-text { font-size: 0.95rem; line-height: 1.65; font-style: italic; }
+  .saved-note {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 6px;
+  }
+
+  .priority-box {
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .priority-box .priority-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold); font-weight: 700; }
+  .priority-box .priority-text { font-size: 1rem; line-height: 1.5; }
+
+  .score-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .loading-text { color: var(--text-dim); font-size: 0.88rem; font-style: italic; }
+  .divider { height: 1px; background: #1e3050; width: 100%; }
+  .flag-banner {
+    background: rgba(224,85,85,0.12);
+    border: 1px solid rgba(224,85,85,0.4);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--red);
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .flag-banner .flag-title { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1 — PASSWORD -->
+<div id="screen-password" class="screen active">
+  <div class="pw-card">
+    <h1>REIPractice</h1>
+    <span class="pw-training-badge">Training Mode</span>
+    <p class="tagline">Certified acquisition call training</p>
+    <div class="field">
+      <input type="password" id="pw-input" placeholder="Enter training access code" autocomplete="off" />
+      <button class="btn" id="pw-btn">Enter</button>
+      <p class="pw-error" id="pw-error"></p>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2 — SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-header">
+    <h1>REIPractice Training</h1>
+    <p class="tagline">Choose a seller scenario and run your rep.</p>
+  </div>
+
+  <div class="identity-fields">
+    <div class="field-group">
+      <label for="caller-name">Your name <span style="color:var(--gold)">*</span></label>
+      <input type="text" id="caller-name" placeholder="First name" maxlength="40" autocomplete="off" />
+    </div>
+    <div class="field-group">
+      <label for="caller-email">Your email <span style="color:var(--gold)">*</span></label>
+      <input type="email" id="caller-email" placeholder="your@email.com" maxlength="80" autocomplete="off" />
+    </div>
+  </div>
+
+  <p class="tracking-note">Your sessions are reviewed by your broker for coaching.</p>
+
+  <div class="calltype-section">
+    <span class="calltype-label">Call type</span>
+    <div class="calltype-pills">
+      <div class="calltype-pill selected" data-type="cold">
+        <span class="ct-name">Cold Call</span>
+        <span class="ct-desc">They don't know you're calling</span>
+      </div>
+      <div class="calltype-pill" data-type="callback">
+        <span class="ct-name">Callback</span>
+        <span class="ct-desc">Returning your voicemail drop</span>
+      </div>
+      <div class="calltype-pill" data-type="mailer">
+        <span class="ct-name">Mailer / Sign</span>
+        <span class="ct-desc">They saw your marketing</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="persona-grid-header">
+      <h2>Pick a Seller</h2>
+      <button class="btn-outline btn" id="random-btn">Random</button>
+    </div>
+  </div>
+
+  <div class="persona-grid" id="persona-grid">
+    <p class="loading-text">Loading scenarios...</p>
+  </div>
+
+  <div class="setup-footer">
+    <button class="btn" id="start-btn" disabled>Begin Training Session</button>
+  </div>
+</div>
+
+<!-- SCREEN 3 — CALL -->
+<div id="screen-call" class="screen">
+  <div class="call-topbar">
+    <div class="call-topbar-left">
+      <span class="persona-title" id="call-persona-name"></span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="call-persona-label" style="font-size:0.85rem;color:var(--text-dim);"></span>
+        <span class="difficulty-badge" id="call-difficulty-badge"></span>
+        <span id="call-type-badge" style="font-size:0.75rem;color:var(--text-dim);font-style:italic;"></span>
+      </div>
+    </div>
+    <div class="call-topbar-right">
+      <span class="training-mode-badge">Training Mode</span>
+      <button class="btn-ghost btn" id="reset-btn">Reset</button>
+      <button class="btn btn-outline" id="end-session-btn">End Session</button>
+    </div>
+  </div>
+
+  <div class="state-bar" id="state-bar">
+    <div class="state-item"><span class="state-label">Trust</span><span class="state-val" id="state-trust">3</span></div>
+    <div class="state-item"><span class="state-label">Irritation</span><span class="state-val" id="state-irritation">2</span></div>
+    <div class="state-item"><span class="state-label">Openness</span><span class="state-val" id="state-openness">2</span></div>
+    <div class="state-item"><span class="state-label">Rapport</span><span class="state-val" id="state-rapport">2</span></div>
+    <div class="state-item"><span class="state-label">Motivation</span><span class="state-val" id="state-motivation" style="font-size:0.85rem;">Hidden</span></div>
+  </div>
+
+  <div class="call-framing hidden" id="call-framing"></div>
+
+  <div class="persona-speech" id="persona-speech">
+    <span style="color:var(--text-dim);font-style:normal;font-size:0.9rem;">Connecting...</span>
+  </div>
+
+  <div class="speak-area">
+    <div class="speak-btn disabled-btn" id="speak-btn" title="Hold to speak">
+      <svg class="mic-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4zm0 2a2 2 0 0 1 2 2v6a2 2 0 0 1-4 0V5a2 2 0 0 1 2-2zM7 11a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.93V21h2v2H9v-2h2v-3.07A7 7 0 0 1 5 11h2z"/>
+      </svg>
+    </div>
+    <p class="speak-status" id="speak-status">Waiting for seller...</p>
+  </div>
+
+  <div class="transcript-section">
+    <button class="transcript-toggle" id="transcript-toggle">
+      <span id="transcript-toggle-icon">▶</span> Show transcript
+    </button>
+    <div class="transcript-panel hidden" id="transcript-panel"></div>
+  </div>
+</div>
+
+<!-- SCREEN 4 — SCORE -->
+<div id="screen-score" class="screen">
+  <div class="score-header">
+    <h2 id="score-title">Session Complete</h2>
+    <div class="score-overall" id="score-overall"></div>
+  </div>
+
+  <div id="flag-banner" style="display:none;" class="flag-banner">
+    <span class="flag-title">⚠️ Critical failure flagged</span>
+    <span id="flag-reasons-text"></span>
+  </div>
+
+  <div class="score-items" id="score-items"></div>
+
+  <div class="score-summary">
+    <h3>Coaching Notes</h3>
+    <p id="score-summary-text"></p>
+  </div>
+
+  <div class="priority-box">
+    <span class="priority-label">Work on next session</span>
+    <p class="priority-text" id="score-priority"></p>
+  </div>
+
+  <div class="virtual-steve-card">
+    <span class="vs-label">Virtual Steve says:</span>
+    <p class="vs-text" id="vs-text"><em>Loading coaching note...</em></p>
+  </div>
+
+  <p class="saved-note" id="saved-note">Saving session...</p>
+
+  <div class="score-actions">
+    <button class="btn" id="run-again-btn">Run Again</button>
+    <button class="btn btn-outline" id="change-scenario-btn">Change Scenario</button>
+  </div>
+</div>
+
+<script>
+// NO browser storage — all state is in-memory only
+try { localStorage.clear(); sessionStorage.clear(); } catch(e) {}
+
+const state = {
+  callerName: '',
+  callerEmail: '',
+  selectedPersona: null,
+  callType: 'cold',
+  personaData: null,
+  allPersonas: [],
+  sessionState: { trust: 3, irritation: 2, openness: 2, motivation_revealed: false, rapport: 2 },
+  history: [],
+  transcript: [],
+  transcriptVisible: false,
+  speaking: false,
+  ready: false,
+  recognition: null,
+  synth: window.speechSynthesis,
+  voices: [],
+  sessionStart: null
+};
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── PASSWORD SCREEN ───────────────────────────────────────────────────────────
+
+document.getElementById('pw-btn').addEventListener('click', checkPassword);
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+
+async function checkPassword() {
+  const pw = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+  err.textContent = '';
+  try {
+    const res = await fetch('/validate-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      showScreen('screen-setup');
+      loadPersonas();
+    } else {
+      err.textContent = 'Access denied.';
+    }
+  } catch {
+    err.textContent = 'Connection error.';
+  }
+}
+
+// ── SETUP SCREEN ──────────────────────────────────────────────────────────────
+
+async function loadPersonas() {
+  const grid = document.getElementById('persona-grid');
+  grid.innerHTML = '<p class="loading-text">Loading scenarios...</p>';
+  try {
+    const res = await fetch('/personas');
+    const personas = await res.json();
+    state.allPersonas = personas;
+    renderPersonaGrid(personas);
+  } catch {
+    grid.innerHTML = '<p style="color:var(--red)">Failed to load scenarios.</p>';
+  }
+}
+
+function diffClass(d) {
+  return { medium: 'diff-medium', 'medium-hard': 'diff-medium-hard', hard: 'diff-hard', hardest: 'diff-hardest' }[d] || 'diff-medium';
+}
+
+function renderPersonaGrid(personas) {
+  const grid = document.getElementById('persona-grid');
+  grid.innerHTML = '';
+  personas.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'persona-card';
+    card.dataset.id = p.id;
+    card.innerHTML = `
+      <div class="pname">${p.name}</div>
+      <div class="plabel">${p.label}</div>
+      <div class="difficulty-badge ${diffClass(p.difficulty)}">${p.difficulty}</div>
+    `;
+    card.addEventListener('click', () => selectPersona(p.id, card));
+    grid.appendChild(card);
+  });
+}
+
+function selectPersona(id, cardEl) {
+  state.selectedPersona = id;
+  document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+  if (cardEl) cardEl.classList.add('selected');
+  updateStartButton();
+}
+
+document.getElementById('caller-name').addEventListener('input', updateStartButton);
+document.getElementById('caller-email').addEventListener('input', updateStartButton);
+
+document.getElementById('random-btn').addEventListener('click', () => {
+  const nameEl = document.getElementById('caller-name');
+  const emailEl = document.getElementById('caller-email');
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  if (!email) { emailEl.focus(); return; }
+  if (!state.allPersonas.length) return;
+  const types = ['cold', 'callback', 'mailer'];
+  state.callType = types[Math.floor(Math.random() * types.length)];
+  state.selectedPersona = state.allPersonas[Math.floor(Math.random() * state.allPersonas.length)].id;
+  document.querySelectorAll('.calltype-pill').forEach(p => p.classList.toggle('selected', p.dataset.type === state.callType));
+  startSession();
+});
+
+document.querySelectorAll('.calltype-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.calltype-pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    state.callType = pill.dataset.type;
+    updateStartButton();
+  });
+});
+
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function updateStartButton() {
+  const name = document.getElementById('caller-name').value.trim();
+  const email = document.getElementById('caller-email').value.trim();
+  document.getElementById('start-btn').disabled = !(name && isValidEmail(email) && state.selectedPersona);
+}
+
+document.getElementById('start-btn').addEventListener('click', startSession);
+
+async function startSession() {
+  state.callerName = document.getElementById('caller-name').value.trim();
+  state.callerEmail = document.getElementById('caller-email').value.trim();
+  try {
+    const res = await fetch(`/persona/${state.selectedPersona}`);
+    state.personaData = await res.json();
+  } catch {
+    alert('Failed to load persona. Try again.');
+    return;
+  }
+  resetSessionState();
+  state.sessionStart = Date.now();
+  showScreen('screen-call');
+  setupCallScreen();
+  speakOpening();
+}
+
+function resetSessionState() {
+  const pd = state.personaData;
+  state.sessionState = {
+    trust: pd.starting_state ? pd.starting_state.trust : 3,
+    irritation: pd.starting_state ? pd.starting_state.irritation : 2,
+    openness: pd.starting_state ? pd.starting_state.openness : 2,
+    motivation_revealed: false,
+    rapport: pd.starting_state ? pd.starting_state.rapport : 2
+  };
+  state.history = [];
+  state.transcript = [];
+  state.ready = false;
+}
+
+function setupCallScreen() {
+  const pd = state.personaData;
+  document.getElementById('call-persona-name').textContent = pd.name;
+  document.getElementById('call-persona-label').textContent = pd.label;
+  const badge = document.getElementById('call-difficulty-badge');
+  badge.textContent = pd.difficulty;
+  badge.className = `difficulty-badge ${diffClass(pd.difficulty)}`;
+  const ctLabels = { cold: 'Cold call', callback: 'Callback', mailer: 'Mailer / Sign' };
+  document.getElementById('call-type-badge').textContent = ctLabels[state.callType] || '';
+  updateStateBar();
+  document.getElementById('transcript-panel').innerHTML = '';
+  document.getElementById('persona-speech').innerHTML = '<span style="color:var(--text-dim);font-style:normal;font-size:0.9rem;">Connecting...</span>';
+  document.getElementById('speak-status').textContent = 'Waiting for seller...';
+  setTranscriptVisible(false);
+  setSpeakBtnState('disabled');
+}
+
+// ── CALL SCREEN ───────────────────────────────────────────────────────────────
+
+function updateStateBar() {
+  const s = state.sessionState;
+  document.getElementById('state-trust').textContent = Math.round(s.trust);
+  document.getElementById('state-irritation').textContent = Math.round(s.irritation);
+  document.getElementById('state-openness').textContent = Math.round(s.openness);
+  document.getElementById('state-rapport').textContent = Math.round(s.rapport);
+  document.getElementById('state-motivation').textContent = s.motivation_revealed ? 'Revealed' : 'Hidden';
+}
+
+const CALL_FRAMING = {
+  cold:     name => `\u{1F4DE} ${name} answers an unknown number...`,
+  callback: name => `\u{1F4DE} ${name} returns your voicemail...`,
+  mailer:   name => `\u{1F4DE} ${name} saw your card and called back...`
+};
+
+function speakOpening() {
+  const pd = state.personaData;
+  const ct = state.callType || 'cold';
+  const variantPool = (pd.opening_variants && pd.opening_variants[ct]) ? pd.opening_variants[ct] : ['Hello?'];
+  const opening = variantPool[Math.floor(Math.random() * variantPool.length)] || 'Hello?';
+  const framingEl = document.getElementById('call-framing');
+  framingEl.textContent = CALL_FRAMING[ct] ? CALL_FRAMING[ct](pd.name) : `\u{1F4DE} ${pd.name} picks up...`;
+  framingEl.classList.remove('hidden');
+  state.history.push({ role: 'assistant', content: opening });
+  addToTranscript('ai', pd.name, opening);
+  showPersonaSpeech(opening);
+  speakText(opening, pd.voice_config, () => {
+    framingEl.classList.add('hidden');
+    state.ready = true;
+    setSpeakBtnState('ready');
+    document.getElementById('speak-status').textContent = 'Hold to speak';
+  });
+}
+
+function showPersonaSpeech(text) {
+  const el = document.getElementById('persona-speech');
+  el.className = 'persona-speech';
+  el.textContent = text;
+}
+
+// ── SPEECH SYNTHESIS ──────────────────────────────────────────────────────────
+
+function loadVoices() {
+  state.voices = speechSynthesis.getVoices();
+  if (!state.voices.length) {
+    speechSynthesis.addEventListener('voiceschanged', () => { state.voices = speechSynthesis.getVoices(); }, { once: true });
+  }
+}
+loadVoices();
+
+function pickVoice(preference) {
+  const voices = state.voices.length ? state.voices : speechSynthesis.getVoices();
+  if (preference === 'female') return voices.find(v => v.name.match(/Samantha|Karen|Zira|Google UK English Female|Victoria|Allison/i)) || voices[0];
+  return voices.find(v => v.name.match(/David|Mark|Google UK English Male|Daniel|Alex|Fred/i)) || voices[0];
+}
+
+function speakText(text, voiceConfig, onEnd) {
+  if (state.synth.speaking) state.synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const voice = pickVoice(voiceConfig?.voice_preference || 'male');
+  if (voice) utt.voice = voice;
+  utt.rate = voiceConfig?.rate || 0.92;
+  utt.pitch = voiceConfig?.pitch || 1.0;
+  state.speaking = true;
+  utt.onend = () => { state.speaking = false; if (onEnd) onEnd(); };
+  utt.onerror = () => { state.speaking = false; if (onEnd) onEnd(); };
+  state.synth.speak(utt);
+}
+
+// ── WEB SPEECH RECOGNITION ────────────────────────────────────────────────────
+
+function setSpeakBtnState(mode) {
+  const btn = document.getElementById('speak-btn');
+  btn.className = 'speak-btn';
+  if (mode === 'disabled') btn.classList.add('disabled-btn');
+  if (mode === 'listening') btn.classList.add('listening');
+}
+
+const speakBtn = document.getElementById('speak-btn');
+speakBtn.addEventListener('mousedown', startListening);
+speakBtn.addEventListener('touchstart', e => { e.preventDefault(); startListening(); });
+speakBtn.addEventListener('mouseup', stopListening);
+speakBtn.addEventListener('touchend', e => { e.preventDefault(); stopListening(); });
+speakBtn.addEventListener('mouseleave', stopListening);
+
+let recognitionActive = false;
+let capturedText = '';
+
+function startListening() {
+  if (!state.ready || state.speaking) return;
+  if (recognitionActive) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Speech recognition not supported. Use Chrome or Edge.'); return; }
+  capturedText = '';
+  const rec = new SR();
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.lang = 'en-US';
+  rec.onstart = () => { recognitionActive = true; setSpeakBtnState('listening'); document.getElementById('speak-status').textContent = 'Listening...'; };
+  rec.onresult = e => { capturedText = e.results[0][0].transcript; };
+  rec.onerror = err => { recognitionActive = false; setSpeakBtnState('ready'); document.getElementById('speak-status').textContent = 'Hold to speak'; console.warn('Recognition error:', err.error); };
+  rec.onend = () => {
+    recognitionActive = false;
+    setSpeakBtnState('disabled');
+    document.getElementById('speak-status').textContent = `${state.personaData.name} is responding...`;
+    if (capturedText) sendMessage(capturedText);
+    else { setSpeakBtnState('ready'); document.getElementById('speak-status').textContent = 'Hold to speak'; }
+  };
+  state.recognition = rec;
+  rec.start();
+}
+
+function stopListening() {
+  if (state.recognition && recognitionActive) state.recognition.stop();
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────────
+
+async function sendMessage(userText) {
+  state.ready = false;
+  addToTranscript('user', state.callerName, userText);
+  state.history.push({ role: 'user', content: userText });
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        personaId: state.selectedPersona,
+        history: state.history.slice(-20),
+        userMessage: userText,
+        sessionState: state.sessionState,
+        callType: state.callType
+      })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    state.sessionState = data.updatedState;
+    updateStateBar();
+    state.history.push({ role: 'assistant', content: data.reply });
+    addToTranscript('ai', state.personaData.name, data.reply);
+    showPersonaSpeech(data.reply);
+    speakText(data.reply, state.personaData.voice_config, () => {
+      state.ready = true;
+      setSpeakBtnState('ready');
+      document.getElementById('speak-status').textContent = 'Hold to speak';
+    });
+  } catch (err) {
+    console.error(err);
+    document.getElementById('speak-status').textContent = 'Error — try again';
+    setSpeakBtnState('ready');
+    state.ready = true;
+  }
+}
+
+// ── TRANSCRIPT ────────────────────────────────────────────────────────────────
+
+function addToTranscript(role, label, text) {
+  state.transcript.push({ role, label, content: text });
+  renderTranscriptTurn(role, label, text);
+}
+
+function renderTranscriptTurn(role, label, text) {
+  const panel = document.getElementById('transcript-panel');
+  const div = document.createElement('div');
+  div.className = 'tx-turn';
+  div.innerHTML = `<span class="tx-label ${role === 'user' ? 'user-label' : 'ai-label'}">${label.toUpperCase()}</span><span class="tx-text">${text}</span>`;
+  panel.appendChild(div);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function setTranscriptVisible(visible) {
+  state.transcriptVisible = visible;
+  const panel = document.getElementById('transcript-panel');
+  const icon = document.getElementById('transcript-toggle-icon');
+  const toggle = document.getElementById('transcript-toggle');
+  if (visible) { panel.classList.remove('hidden'); icon.textContent = '▼'; toggle.childNodes[1].textContent = ' Hide transcript'; }
+  else { panel.classList.add('hidden'); icon.textContent = '▶'; toggle.childNodes[1].textContent = ' Show transcript'; }
+}
+
+document.getElementById('transcript-toggle').addEventListener('click', () => setTranscriptVisible(!state.transcriptVisible));
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (state.synth.speaking) state.synth.cancel();
+  if (state.recognition) try { state.recognition.abort(); } catch(e) {}
+  state.history = [];
+  state.transcript = [];
+  state.ready = false;
+  state.speaking = false;
+  state.sessionState = { trust: 3, irritation: 2, openness: 2, motivation_revealed: false, rapport: 2 };
+  showScreen('screen-setup');
+  if (state.selectedPersona) {
+    document.querySelectorAll('.persona-card').forEach(c => c.classList.toggle('selected', c.dataset.id === state.selectedPersona));
+  }
+  updateStartButton();
+});
+
+// ── END SESSION ───────────────────────────────────────────────────────────────
+
+document.getElementById('end-session-btn').addEventListener('click', endSession);
+
+async function endSession() {
+  if (state.synth.speaking) state.synth.cancel();
+  if (state.transcript.length < 2) {
+    alert('Run at least one exchange before ending the session.');
+    return;
+  }
+
+  setSpeakBtnState('disabled');
+  document.getElementById('speak-status').textContent = 'Scoring session...';
+  document.getElementById('end-session-btn').disabled = true;
+
+  const durationMin = state.sessionStart ? Math.round((Date.now() - state.sessionStart) / 60000) : 0;
+  const turnCount = state.transcript.filter(t => t.role === 'user').length;
+
+  try {
+    const res = await fetch('/end-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callerName: state.callerName,
+        callerEmail: state.callerEmail,
+        personaId: state.selectedPersona,
+        callType: state.callType,
+        transcript: state.transcript,
+        finalState: state.sessionState,
+        sessionDurationMinutes: durationMin,
+        turnCount
+      })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    renderScoreScreen(data.score, data.coachingNote, data.saved);
+    showScreen('screen-score');
+  } catch (err) {
+    console.error(err);
+    document.getElementById('end-session-btn').disabled = false;
+    document.getElementById('speak-status').textContent = 'Error — try again';
+    setSpeakBtnState('ready');
+    state.ready = true;
+  }
+}
+
+// ── SCORE SCREEN ──────────────────────────────────────────────────────────────
+
+function renderScoreScreen(score, coachingNote, saved) {
+  const pd = state.personaData;
+  document.getElementById('score-title').textContent = `Session Complete — ${pd.name} (${pd.label})`;
+  document.getElementById('score-overall').textContent = `Overall: ${score.overall} passed`;
+
+  // Flag banner
+  const flagBanner = document.getElementById('flag-banner');
+  if (score.flagged && score.flag_reasons && score.flag_reasons.length) {
+    flagBanner.style.display = 'flex';
+    document.getElementById('flag-reasons-text').textContent = score.flag_reasons.join(' • ');
+  } else {
+    flagBanner.style.display = 'none';
+  }
+
+  const itemsEl = document.getElementById('score-items');
+  itemsEl.innerHTML = '';
+  score.items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'score-item';
+    const key = (item.result || '').toLowerCase();
+    const resultClass = { pass: 'result-pass', partial: 'result-partial', fail: 'result-fail', 'n/a': 'result-na' }[key] || 'result-na';
+    div.innerHTML = `
+      <div class="score-item-top">
+        <span class="score-item-name">${item.name}</span>
+        <span class="result-badge ${resultClass}">${item.result}</span>
+      </div>
+      <p class="score-item-feedback">${item.feedback}</p>
+    `;
+    itemsEl.appendChild(div);
+  });
+
+  document.getElementById('score-summary-text').textContent = score.summary;
+  document.getElementById('score-priority').textContent = score.top_priority;
+
+  document.getElementById('vs-text').textContent = coachingNote || 'Coaching note unavailable.';
+  document.getElementById('saved-note').textContent = saved
+    ? 'Session saved for broker review.'
+    : 'Session could not be saved — please check server logs.';
+}
+
+document.getElementById('run-again-btn').addEventListener('click', () => {
+  resetSessionState();
+  state.sessionStart = Date.now();
+  setupCallScreen();
+  showScreen('screen-call');
+  speakOpening();
+});
+
+document.getElementById('change-scenario-btn').addEventListener('click', () => {
+  if (state.synth.speaking) state.synth.cancel();
+  showScreen('screen-setup');
+  state.selectedPersona = null;
+  state.personaData = null;
+  document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+  updateStartButton();
+});
+</script>
+</body>
+</html>
