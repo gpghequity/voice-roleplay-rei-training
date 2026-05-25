@@ -13,7 +13,7 @@ async function appendRow(values) {
 
   const res = await sheets.spreadsheets.values.append({
     spreadsheetId: id,
-    range: 'Sheet1!A:U',
+    range: ''REIPractice Training Log'!A:U',
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [values] }
@@ -29,7 +29,7 @@ async function getYesterdayRows() {
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: id,
-    range: 'Sheet1!A:U'
+    range: ''REIPractice Training Log'!A:U'
   });
 
   const yesterday = new Date();
