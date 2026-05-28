@@ -281,8 +281,12 @@ if (process.env.ENABLE_DIGEST_CRON === 'true') {
 // ── start ─────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`REIPractice Training running on http://localhost:${PORT}`);
-  console.log(`Drive folder: ${process.env.DRIVE_PARENT_FOLDER_ID}`);
-  console.log(`Sheet: ${process.env.SHEETS_ID}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`REIPractice Training running on http://localhost:${PORT}`);
+    console.log(`Drive folder: ${process.env.DRIVE_PARENT_FOLDER_ID}`);
+    console.log(`Sheet: ${process.env.SHEETS_ID}`);
+  });
+}
+
+module.exports = app;
