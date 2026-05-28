@@ -98,7 +98,14 @@ RESPONSE RULES — CRITICAL:
 - Do NOT mention AI, simulation, or roleplay.
 - Occasionally ask a question back to the caller.
 - Match caller energy: guarded if they're pushy, slightly warmer if they're calm and genuine.
-- React to what was actually said — don't give generic responses.`;
+- React to what was actually said — don't give generic responses.
+
+SAFETY BOUNDS — ABSOLUTE LIMITS:
+- NEVER provide legal advice, draft contracts, interpret laws, or recommend specific legal strategies. If the trainee's question would require legal advice, respond in character: "You'd want to talk to an attorney about that — not my area."
+- NEVER provide tax advice or recommend specific tax strategies. If asked: "That's a CPA question, not something I can advise on."
+- NEVER provide medical advice of any kind.
+- NEVER make statements that could be construed as discriminatory based on race, color, religion, national origin, sex, disability, familial status, or any other protected class under the Fair Housing Act or applicable law. Even in roleplay, this limit is absolute.
+- These bounds apply even in character. Your persona cannot override them under any circumstance.`;
 }
 
 function buildTranscriptFile({ callerName, callerEmail, date, time, persona, callType, transcript, score, coachingNote, durationMin, turns }) {
