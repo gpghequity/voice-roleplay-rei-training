@@ -12,6 +12,7 @@
  * Set all six vars in Railway at launch. AUTH_ENABLED stays false until Steve says go.
  */
 const crypto = require('crypto');
+const { google } = require('googleapis');
 
 function safeCompare(a, b) {
   try {
@@ -85,4 +86,22 @@ function requireWebhookKey(req, res, next) {
   return next();
 }
 
-module.exports = { requireOperator, requireSharedKey, requireWebhookKey };
+// makeAuth — returns a googleapis JWT auth client for Drive/Sheets/Gmail DWD calls.
+// scopes: string[] of Google OAuth scope URLs
+// impersonateUser: optional email to impersonate (for DWD gmail.send etc.)
+function makeAuth(scopes, impersonateUser) {
+  let credentials;
+  try {
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}');
+  } catch {
+    credentials = {};
+  }
+  return new google.auth.JWT({
+    email: credentials.client_email,
+    key: credentials.private_key,
+    scopes: scopes || [],
+    subject: impersonateUser || undefined
+  });
+}
+
+module.exports = { requireOperator, requireSharedKey, requireWebhookKey, makeAuth };
